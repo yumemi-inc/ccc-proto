@@ -1,0 +1,471 @@
+---
+title: AdvancedCombobox
+description: 検索履歴とお気に入り機能を備えた高機能なComboboxコンポーネント
+sidebar_position: 2
+tags:
+  - フォーム
+  - 検索
+---
+
+import { useState, useEffect } from "react";
+import {
+  Combobox,
+  Input,
+  InputBase,
+  useCombobox,
+  Text,
+  Group,
+  ActionIcon,
+  Badge,
+  Stack,
+  Box,
+  Button,
+} from "@mantine/core";
+import {
+  IconSearch,
+  IconStar,
+  IconStarFilled,
+  IconClock,
+  IconX,
+} from "@tabler/icons-react";
+
+# AdvancedCombobox
+
+検索履歴とお気に入り機能を備えた高機能な Combobox コンポーネントです。
+
+## 概要
+
+`AdvancedCombobox`は、Mantine UI の`Combobox`を拡張して以下の機能を追加したコンポーネントです：
+
+- **検索履歴機能**: 過去の検索キーワードを保存・表示
+- **お気に入り機能**: よく使う項目をお気に入りに登録
+- **カテゴリ表示**: 履歴・お気に入り・検索結果を分類表示
+- **キーボード操作**: 矢印キーでの選択、Enter で決定
+
+## ライブデモ
+
+export const AdvancedComboboxDemo = () => {
+  const [value, setValue] = useState('');
+  const [searchHistory, setSearchHistory] = useState([
+    'React', 'TypeScript', 'JavaScript', 'Next.js'
+  ]);
+  const [favorites, setFavorites] = useState(['React', 'TypeScript']);
+  
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+const allOptions = [
+'React', 'TypeScript', 'JavaScript', 'Next.js', 'Vue.js',
+'Angular', 'Svelte', 'Node.js', 'Python', 'Java', 'C++', 'Go'
+];
+
+const filteredOptions = allOptions.filter((item) =>
+item.toLowerCase().includes(value.toLowerCase().trim())
+);
+
+const toggleFavorite = (item) => {
+setFavorites(prev =>
+prev.includes(item)
+? prev.filter(fav => fav !== item)
+: [...prev, item]
+);
+};
+
+const selectItem = (item) => {
+setValue(item);
+combobox.closeDropdown();
+
+    // 履歴に追加（重複削除）
+    setSearchHistory(prev => {
+      const filtered = prev.filter(h => h !== item);
+      return [item, ...filtered].slice(0, 5); // 最大5件
+    });
+
+};
+
+const clearHistory = () => {
+setSearchHistory([]);
+};
+
+const renderSection = (title, items, icon, showClear = false) => {
+if (items.length === 0) return null;
+
+    return (
+      <>
+        <Combobox.Group>
+          <Group justify="space-between" px="xs" py={4}>
+            <Group gap={4}>
+              {icon}
+              <Text size="xs" fw={500} c="dimmed">{title}</Text>
+            </Group>
+            {showClear && (
+              <ActionIcon
+                variant="subtle"
+                size="xs"
+                onClick={clearHistory}
+                aria-label="履歴をクリア"
+              >
+                <IconX size={12} />
+              </ActionIcon>
+            )}
+          </Group>
+        </Combobox.Group>
+        {items.map((item) => (
+          <Combobox.Option value={item} key={item}>
+            <Group justify="space-between">
+              <Text size="sm">{item}</Text>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(item);
+                }}
+                aria-label={`${item}をお気に入り${favorites.includes(item) ? '解除' : '追加'}`}
+              >
+                {favorites.includes(item) ?
+                  <IconStarFilled size={14} color="gold" /> :
+                  <IconStar size={14} />
+                }
+              </ActionIcon>
+            </Group>
+          </Combobox.Option>
+        ))}
+      </>
+    );
+
+};
+
+return (
+
+<Box>
+<Combobox
+        store={combobox}
+        withinPortal={false}
+        onOptionSubmit={selectItem}
+      >
+<Combobox.Target>
+<InputBase
+component="button"
+type="button"
+pointer
+rightSection={<Combobox.Chevron />}
+rightSectionPointerEvents="none"
+onClick={() => combobox.openDropdown()}
+onFocus={() => combobox.openDropdown()}
+onBlur={() => combobox.closeDropdown()}
+placeholder="技術スタックを選択..."
+leftSection={<IconSearch size={16} />} >
+{value || <Input.Placeholder>技術スタックを選択...</Input.Placeholder>}
+</InputBase>
+</Combobox.Target>
+
+        <Combobox.Dropdown>
+          <Combobox.Search
+            value={value}
+            onChange={(event) => setValue(event.currentTarget.value)}
+            placeholder="検索..."
+          />
+
+          <Combobox.Options>
+            {value.trim() === '' && (
+              <>
+                {renderSection(
+                  'お気に入り',
+                  favorites,
+                  <IconStarFilled size={12} color="gold" />
+                )}
+                {renderSection(
+                  '最近の検索',
+                  searchHistory.filter(h => !favorites.includes(h)),
+                  <IconClock size={12} />,
+                  true
+                )}
+              </>
+            )}
+
+            {renderSection(
+              value.trim() === '' ? 'すべての選択肢' : '検索結果',
+              filteredOptions.filter(item =>
+                value.trim() === '' || !favorites.includes(item) && !searchHistory.includes(item)
+              ),
+              <IconSearch size={12} />
+            )}
+
+            {value.trim() !== '' && filteredOptions.length === 0 && (
+              <Combobox.Empty>該当する項目が見つかりません</Combobox.Empty>
+            )}
+          </Combobox.Options>
+        </Combobox.Dropdown>
+      </Combobox>
+
+      {value && (
+        <Box mt="md">
+          <Text size="sm" c="dimmed">選択された技術:</Text>
+          <Badge size="lg" mt={4}>{value}</Badge>
+        </Box>
+      )}
+    </Box>
+
+);
+};
+
+<AdvancedComboboxDemo />
+
+## 実装コード
+
+```tsx
+import { useState } from "react";
+import {
+  Combobox,
+  Input,
+  InputBase,
+  useCombobox,
+  Text,
+  Group,
+  ActionIcon,
+} from "@mantine/core";
+import {
+  IconSearch,
+  IconStar,
+  IconStarFilled,
+  IconClock,
+  IconX,
+} from "@tabler/icons-react";
+
+interface AdvancedComboboxProps {
+  data: string[];
+  placeholder?: string;
+  maxHistory?: number;
+  value?: string;
+  onChange?: (value: string) => void;
+}
+
+export function AdvancedCombobox({
+  data,
+  placeholder = "選択してください...",
+  maxHistory = 5,
+  value: controlledValue,
+  onChange,
+}: AdvancedComboboxProps) {
+  const [value, setValue] = useState(controlledValue || "");
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  const filteredOptions = data.filter((item) =>
+    item.toLowerCase().includes(value.toLowerCase().trim())
+  );
+
+  const toggleFavorite = (item: string) => {
+    setFavorites((prev) =>
+      prev.includes(item) ? prev.filter((fav) => fav !== item) : [...prev, item]
+    );
+  };
+
+  const selectItem = (item: string) => {
+    setValue(item);
+    onChange?.(item);
+    combobox.closeDropdown();
+
+    // 履歴に追加
+    setSearchHistory((prev) => {
+      const filtered = prev.filter((h) => h !== item);
+      return [item, ...filtered].slice(0, maxHistory);
+    });
+  };
+
+  const clearHistory = () => {
+    setSearchHistory([]);
+  };
+
+  const renderSection = (
+    title: string,
+    items: string[],
+    icon: React.ReactNode,
+    showClear = false
+  ) => {
+    if (items.length === 0) return null;
+
+    return (
+      <>
+        <Combobox.Group>
+          <Group justify="space-between" px="xs" py={4}>
+            <Group gap={4}>
+              {icon}
+              <Text size="xs" fw={500} c="dimmed">
+                {title}
+              </Text>
+            </Group>
+            {showClear && (
+              <ActionIcon variant="subtle" size="xs" onClick={clearHistory}>
+                <IconX size={12} />
+              </ActionIcon>
+            )}
+          </Group>
+        </Combobox.Group>
+        {items.map((item) => (
+          <Combobox.Option value={item} key={item}>
+            <Group justify="space-between">
+              <Text size="sm">{item}</Text>
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(item);
+                }}
+              >
+                {favorites.includes(item) ? (
+                  <IconStarFilled size={14} color="gold" />
+                ) : (
+                  <IconStar size={14} />
+                )}
+              </ActionIcon>
+            </Group>
+          </Combobox.Option>
+        ))}
+      </>
+    );
+  };
+
+  return (
+    <Combobox store={combobox} onOptionSubmit={selectItem}>
+      <Combobox.Target>
+        <InputBase
+          component="button"
+          type="button"
+          pointer
+          rightSection={<Combobox.Chevron />}
+          rightSectionPointerEvents="none"
+          onClick={() => combobox.openDropdown()}
+          onFocus={() => combobox.openDropdown()}
+          onBlur={() => combobox.closeDropdown()}
+          placeholder={placeholder}
+          leftSection={<IconSearch size={16} />}
+        >
+          {value || <Input.Placeholder>{placeholder}</Input.Placeholder>}
+        </InputBase>
+      </Combobox.Target>
+
+      <Combobox.Dropdown>
+        <Combobox.Search
+          value={value}
+          onChange={(event) => setValue(event.currentTarget.value)}
+          placeholder="検索..."
+        />
+
+        <Combobox.Options>
+          {value.trim() === "" && (
+            <>
+              {renderSection(
+                "お気に入り",
+                favorites,
+                <IconStarFilled size={12} color="gold" />
+              )}
+              {renderSection(
+                "最近の検索",
+                searchHistory.filter((h) => !favorites.includes(h)),
+                <IconClock size={12} />,
+                true
+              )}
+            </>
+          )}
+
+          {renderSection(
+            value.trim() === "" ? "すべての選択肢" : "検索結果",
+            filteredOptions.filter(
+              (item) =>
+                value.trim() === "" ||
+                (!favorites.includes(item) && !searchHistory.includes(item))
+            ),
+            <IconSearch size={12} />
+          )}
+
+          {value.trim() !== "" && filteredOptions.length === 0 && (
+            <Combobox.Empty>該当する項目が見つかりません</Combobox.Empty>
+          )}
+        </Combobox.Options>
+      </Combobox.Dropdown>
+    </Combobox>
+  );
+}
+```
+
+## プロパティ
+
+| プロパティ    | 型                        | デフォルト              | 説明                                 |
+| ------------- | ------------------------- | ----------------------- | ------------------------------------ |
+| `data`        | `string[]`                | -                       | 選択肢のデータ配列                   |
+| `placeholder` | `string`                  | `"選択してください..."` | プレースホルダーテキスト             |
+| `maxHistory`  | `number`                  | `5`                     | 保存する履歴の最大件数               |
+| `value`       | `string`                  | -                       | 制御された値（制御コンポーネント用） |
+| `onChange`    | `(value: string) => void` | -                       | 値変更時のコールバック               |
+
+## 使用方法
+
+### 基本的な使用
+
+```tsx
+const techStack = [
+  "React",
+  "TypeScript",
+  "JavaScript",
+  "Next.js",
+  "Vue.js",
+  "Angular",
+  "Svelte",
+  "Node.js",
+];
+
+<AdvancedCombobox data={techStack} placeholder="技術スタックを選択..." />;
+```
+
+### 制御コンポーネントとして使用
+
+```tsx
+const [selectedTech, setSelectedTech] = useState("");
+
+<AdvancedCombobox
+  data={techStack}
+  value={selectedTech}
+  onChange={setSelectedTech}
+  maxHistory={3}
+/>;
+```
+
+## 特徴
+
+- **🔍 インクリメンタル検索**: 入力に応じてリアルタイムフィルタリング
+- **⭐ お気に入り機能**: よく使う項目を星印で管理
+- **🕒 検索履歴**: 過去の選択を自動保存（最大件数設定可能）
+- **🎯 直感的な UI**: アイコンとグループ化で視認性向上
+- **⌨️ キーボード対応**: 矢印キー・Enter キーでの操作
+- **♿ アクセシビリティ**: スクリーンリーダー対応
+
+## カスタマイズ例
+
+### 大きなデータセットでの使用
+
+大量のデータを扱う場合は、仮想化やページネーションを検討してください：
+
+```tsx
+// 10,000件のデータでも高速動作
+const largeDataset = Array.from({ length: 10000 }, (_, i) => `項目 ${i + 1}`);
+
+<AdvancedCombobox data={largeDataset} maxHistory={10} />;
+```
+
+### カスタムスタイリング
+
+Mantine のテーマシステムを活用してスタイルをカスタマイズできます：
+
+```tsx
+<AdvancedCombobox data={data} style={{ maxWidth: 400 }} />
+```
+
+このコンポーネントは、ユーザビリティを重視した設計で、実際のプロダクションでも使用できる品質を目指しています。

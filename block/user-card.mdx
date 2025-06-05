@@ -1,0 +1,594 @@
+---
+title: UserCard
+description: ユーザー情報を表示するカード形式のBlockコンポーネント
+sidebar_position: 3
+tags:
+  - プロフィール
+  - カード
+---
+
+import { useState } from "react";
+import {
+  Avatar,
+  Text,
+  Badge,
+  Group,
+  Card,
+  Button,
+  Stack,
+  ActionIcon,
+  Menu,
+  Divider,
+  Box,
+  SimpleGrid,
+  Center,
+} from "@mantine/core";
+import {
+  IconMail,
+  IconPhone,
+  IconMapPin,
+  IconDots,
+  IconEdit,
+  IconTrash,
+  IconHeart,
+  IconHeartFilled,
+  IconUserPlus,
+  IconMessage,
+} from "@tabler/icons-react";
+
+# UserCard
+
+ユーザー情報を表示するカード形式の Block コンポーネントです。
+
+## 概要
+
+`UserCard`は、以下の Mantine コンポーネントを組み合わせて作られた Block コンポーネントです：
+
+- **Avatar**: プロフィール画像表示
+- **Text**: 名前、役職、説明文
+- **Badge**: ステータスやタグ表示
+- **Group**: 水平レイアウト
+- **Card**: カード形式のコンテナ
+- **Button**: アクションボタン
+- **ActionIcon**: アイコンボタン
+- **Menu**: メニューオプション
+
+## ライブデモ
+
+export const UserCardDemo = () => {
+  const [liked, setLiked] = useState({});
+  const [following, setFollowing] = useState({});
+
+const toggleLike = (userId) => {
+setLiked(prev => ({ ...prev, [userId]: !prev[userId] }));
+};
+
+const toggleFollow = (userId) => {
+setFollowing(prev => ({ ...prev, [userId]: !prev[userId] }));
+};
+
+const users = [
+{
+id: 1,
+name: '田中 太郎',
+role: 'フロントエンドエンジニア',
+company: 'Tech Corp',
+avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+status: 'online',
+location: '東京',
+email: 'tanaka@example.com',
+skills: ['React', 'TypeScript', 'Next.js'],
+description: 'フロントエンド開発に情熱を注いでいます。新しい技術を学ぶことが好きです。'
+},
+{
+id: 2,
+name: '佐藤 花子',
+role: 'UX/UI デザイナー',
+company: 'Design Studio',
+avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9c06adb?w=150',
+status: 'away',
+location: '大阪',
+email: 'sato@example.com',
+skills: ['Figma', 'Adobe XD', 'Sketch'],
+description: 'ユーザー体験を向上させるデザインを心がけています。'
+},
+{
+id: 3,
+name: 'John Smith',
+role: 'プロダクトマネージャー',
+company: 'Global Inc',
+avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150',
+status: 'offline',
+location: 'San Francisco',
+email: 'john@example.com',
+skills: ['Strategy', 'Analytics', 'Agile'],
+description: 'チームと製品の成功に向けて戦略的なアプローチを取っています。'
+}
+];
+
+const getStatusColor = (status) => {
+switch (status) {
+case 'online': return 'green';
+case 'away': return 'yellow';
+case 'offline': return 'gray';
+default: return 'gray';
+}
+};
+
+const getStatusLabel = (status) => {
+switch (status) {
+case 'online': return 'オンライン';
+case 'away': return '離席中';
+case 'offline': return 'オフライン';
+default: return '不明';
+}
+};
+
+return (
+
+<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+{users.map((user) => (
+<Card key={user.id} shadow="sm" padding="lg" radius="md" withBorder>
+<Card.Section withBorder inheritPadding py="xs">
+<Group justify="space-between">
+<Badge color={getStatusColor(user.status)} size="sm">
+{getStatusLabel(user.status)}
+</Badge>
+<Menu shadow="md" width={160}>
+<Menu.Target>
+<ActionIcon variant="subtle" color="gray">
+<IconDots size={16} />
+</ActionIcon>
+</Menu.Target>
+<Menu.Dropdown>
+<Menu.Item leftSection={<IconEdit size={14} />}>
+プロフィール編集
+</Menu.Item>
+<Menu.Item leftSection={<IconMessage size={14} />}>
+メッセージ送信
+</Menu.Item>
+<Menu.Divider />
+<Menu.Item leftSection={<IconTrash size={14} />} color="red">
+削除
+</Menu.Item>
+</Menu.Dropdown>
+</Menu>
+</Group>
+</Card.Section>
+
+          <Group justify="center" mt="md">
+            <Avatar src={user.avatar} size={80} radius="xl" />
+          </Group>
+
+          <Stack gap="xs" mt="md">
+            <Text fw={500} size="lg" ta="center">
+              {user.name}
+            </Text>
+            <Text c="dimmed" size="sm" ta="center">
+              {user.role}
+            </Text>
+            <Text c="dimmed" size="xs" ta="center">
+              {user.company}
+            </Text>
+          </Stack>
+
+          <Group justify="center" gap={4} mt="xs">
+            <IconMapPin size={14} />
+            <Text size="xs" c="dimmed">
+              {user.location}
+            </Text>
+          </Group>
+
+          <Text size="sm" mt="md" lineClamp={2}>
+            {user.description}
+          </Text>
+
+          <Group gap={4} mt="xs">
+            {user.skills.map((skill) => (
+              <Badge key={skill} variant="light" size="xs">
+                {skill}
+              </Badge>
+            ))}
+          </Group>
+
+          <Group mt="md" justify="space-between">
+            <Group gap="xs">
+              <ActionIcon
+                variant={liked[user.id] ? 'filled' : 'subtle'}
+                color="red"
+                onClick={() => toggleLike(user.id)}
+                aria-label={`${user.name}をいいね${liked[user.id] ? '解除' : ''}`}
+              >
+                {liked[user.id] ?
+                  <IconHeartFilled size={16} /> :
+                  <IconHeart size={16} />
+                }
+              </ActionIcon>
+              <ActionIcon variant="subtle" aria-label="メッセージ">
+                <IconMessage size={16} />
+              </ActionIcon>
+              <ActionIcon variant="subtle" aria-label="メール">
+                <IconMail size={16} />
+              </ActionIcon>
+            </Group>
+
+            <Button
+              variant={following[user.id] ? 'light' : 'filled'}
+              size="xs"
+              leftSection={<IconUserPlus size={14} />}
+              onClick={() => toggleFollow(user.id)}
+            >
+              {following[user.id] ? 'フォロー中' : 'フォロー'}
+            </Button>
+          </Group>
+        </Card>
+      ))}
+    </SimpleGrid>
+
+);
+};
+
+<UserCardDemo />
+
+## 実装コード
+
+```tsx
+import { useState } from "react";
+import {
+  Avatar,
+  Text,
+  Badge,
+  Group,
+  Card,
+  Button,
+  Stack,
+  ActionIcon,
+  Menu,
+} from "@mantine/core";
+import {
+  IconMail,
+  IconMapPin,
+  IconDots,
+  IconEdit,
+  IconTrash,
+  IconHeart,
+  IconHeartFilled,
+  IconUserPlus,
+  IconMessage,
+} from "@tabler/icons-react";
+
+interface UserCardProps {
+  user: User;
+  onLike?: (userId: string) => void;
+  onFollow?: (userId: string) => void;
+  onMessage?: (userId: string) => void;
+  onEdit?: (userId: string) => void;
+  onDelete?: (userId: string) => void;
+  isLiked?: boolean;
+  isFollowing?: boolean;
+  showActions?: boolean;
+  showMenu?: boolean;
+}
+
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  company?: string;
+  avatar?: string;
+  status: "online" | "away" | "offline";
+  location?: string;
+  email?: string;
+  skills?: string[];
+  description?: string;
+}
+
+export function UserCard({
+  user,
+  onLike,
+  onFollow,
+  onMessage,
+  onEdit,
+  onDelete,
+  isLiked = false,
+  isFollowing = false,
+  showActions = true,
+  showMenu = true,
+}: UserCardProps) {
+  const getStatusColor = (status: User["status"]) => {
+    switch (status) {
+      case "online":
+        return "green";
+      case "away":
+        return "yellow";
+      case "offline":
+        return "gray";
+      default:
+        return "gray";
+    }
+  };
+
+  const getStatusLabel = (status: User["status"]) => {
+    switch (status) {
+      case "online":
+        return "オンライン";
+      case "away":
+        return "離席中";
+      case "offline":
+        return "オフライン";
+      default:
+        return "不明";
+    }
+  };
+
+  return (
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Card.Section withBorder inheritPadding py="xs">
+        <Group justify="space-between">
+          <Badge color={getStatusColor(user.status)} size="sm">
+            {getStatusLabel(user.status)}
+          </Badge>
+          {showMenu && (
+            <Menu shadow="md" width={160}>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="gray">
+                  <IconDots size={16} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconEdit size={14} />}
+                  onClick={() => onEdit?.(user.id)}
+                >
+                  プロフィール編集
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconMessage size={14} />}
+                  onClick={() => onMessage?.(user.id)}
+                >
+                  メッセージ送信
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  leftSection={<IconTrash size={14} />}
+                  color="red"
+                  onClick={() => onDelete?.(user.id)}
+                >
+                  削除
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
+        </Group>
+      </Card.Section>
+
+      <Group justify="center" mt="md">
+        <Avatar src={user.avatar} size={80} radius="xl" />
+      </Group>
+
+      <Stack gap="xs" mt="md">
+        <Text fw={500} size="lg" ta="center">
+          {user.name}
+        </Text>
+        <Text c="dimmed" size="sm" ta="center">
+          {user.role}
+        </Text>
+        {user.company && (
+          <Text c="dimmed" size="xs" ta="center">
+            {user.company}
+          </Text>
+        )}
+      </Stack>
+
+      {user.location && (
+        <Group justify="center" gap={4} mt="xs">
+          <IconMapPin size={14} />
+          <Text size="xs" c="dimmed">
+            {user.location}
+          </Text>
+        </Group>
+      )}
+
+      {user.description && (
+        <Text size="sm" mt="md" lineClamp={2}>
+          {user.description}
+        </Text>
+      )}
+
+      {user.skills && user.skills.length > 0 && (
+        <Group gap={4} mt="xs">
+          {user.skills.map((skill) => (
+            <Badge key={skill} variant="light" size="xs">
+              {skill}
+            </Badge>
+          ))}
+        </Group>
+      )}
+
+      {showActions && (
+        <Group mt="md" justify="space-between">
+          <Group gap="xs">
+            <ActionIcon
+              variant={isLiked ? "filled" : "subtle"}
+              color="red"
+              onClick={() => onLike?.(user.id)}
+            >
+              {isLiked ? (
+                <IconHeartFilled size={16} />
+              ) : (
+                <IconHeart size={16} />
+              )}
+            </ActionIcon>
+            <ActionIcon variant="subtle" onClick={() => onMessage?.(user.id)}>
+              <IconMessage size={16} />
+            </ActionIcon>
+            {user.email && (
+              <ActionIcon variant="subtle">
+                <IconMail size={16} />
+              </ActionIcon>
+            )}
+          </Group>
+
+          <Button
+            variant={isFollowing ? "light" : "filled"}
+            size="xs"
+            leftSection={<IconUserPlus size={14} />}
+            onClick={() => onFollow?.(user.id)}
+          >
+            {isFollowing ? "フォロー中" : "フォロー"}
+          </Button>
+        </Group>
+      )}
+    </Card>
+  );
+}
+```
+
+## プロパティ
+
+| プロパティ    | 型                         | デフォルト | 説明                                     |
+| ------------- | -------------------------- | ---------- | ---------------------------------------- |
+| `user`        | `User`                     | -          | ユーザー情報オブジェクト                 |
+| `onLike`      | `(userId: string) => void` | -          | いいねボタンクリック時のコールバック     |
+| `onFollow`    | `(userId: string) => void` | -          | フォローボタンクリック時のコールバック   |
+| `onMessage`   | `(userId: string) => void` | -          | メッセージボタンクリック時のコールバック |
+| `onEdit`      | `(userId: string) => void` | -          | 編集メニュークリック時のコールバック     |
+| `onDelete`    | `(userId: string) => void` | -          | 削除メニュークリック時のコールバック     |
+| `isLiked`     | `boolean`                  | `false`    | いいね状態                               |
+| `isFollowing` | `boolean`                  | `false`    | フォロー状態                             |
+| `showActions` | `boolean`                  | `true`     | アクションボタンの表示                   |
+| `showMenu`    | `boolean`                  | `true`     | メニューボタンの表示                     |
+
+## 使用方法
+
+### 基本的な使用
+
+```tsx
+const user = {
+  id: "1",
+  name: "田中 太郎",
+  role: "フロントエンドエンジニア",
+  company: "Tech Corp",
+  avatar: "/avatar.jpg",
+  status: "online",
+  location: "東京",
+  skills: ["React", "TypeScript"],
+  description: "新しい技術を学ぶことが好きです。",
+};
+
+<UserCard
+  user={user}
+  onLike={(id) => console.log("Liked:", id)}
+  onFollow={(id) => console.log("Followed:", id)}
+/>;
+```
+
+### 状態管理と組み合わせた使用
+
+```tsx
+const [users, setUsers] = useState(userList);
+const [likes, setLikes] = useState({});
+const [follows, setFollows] = useState({});
+
+const handleLike = (userId) => {
+  setLikes((prev) => ({ ...prev, [userId]: !prev[userId] }));
+};
+
+const handleFollow = (userId) => {
+  setFollows((prev) => ({ ...prev, [userId]: !prev[userId] }));
+};
+
+{
+  users.map((user) => (
+    <UserCard
+      key={user.id}
+      user={user}
+      isLiked={likes[user.id]}
+      isFollowing={follows[user.id]}
+      onLike={handleLike}
+      onFollow={handleFollow}
+    />
+  ));
+}
+```
+
+### カスタマイズ例
+
+```tsx
+// シンプルなプロフィール表示（アクションなし）
+<UserCard
+  user={user}
+  showActions={false}
+  showMenu={false}
+/>
+
+// 管理者向け（削除機能付き）
+<UserCard
+  user={user}
+  onDelete={handleDeleteUser}
+  onEdit={handleEditUser}
+/>
+```
+
+## 構成要素
+
+この Block コンポーネントは以下の Mantine コンポーネントで構成されています：
+
+### プロフィール表示
+
+- **Avatar**: プロフィール画像（サイズ、角丸設定）
+- **Text**: 名前、役職、会社名、説明文
+- **Badge**: ステータス、スキルタグ表示
+
+### レイアウト
+
+- **Card**: メインコンテナ（影、境界線付き）
+- **Group**: 水平レイアウト
+- **Stack**: 垂直レイアウト
+
+### インタラクション
+
+- **ActionIcon**: いいね、メッセージ、メールアイコン
+- **Button**: フォローボタン
+- **Menu**: 設定メニュー（編集・削除など）
+
+## 特徴
+
+- **📱 レスポンシブ**: 画面サイズに応じて調整
+- **🎨 カスタマイズ可能**: 表示要素の切り替えが自由
+- **⚡ インタラクティブ**: いいね、フォロー、メニュー操作
+- **♿ アクセシブル**: キーボード操作対応
+- **🏷️ ステータス表示**: オンライン状態を色で表現
+- **🔧 拡張性**: 新しいアクションの追加が容易
+
+## バリエーション
+
+### チームメンバー表示
+
+```tsx
+<UserCard user={teamMember} showActions={false} onMessage={sendDirectMessage} />
+```
+
+### SNS 風プロフィール
+
+```tsx
+<UserCard
+  user={socialUser}
+  onLike={toggleLike}
+  onFollow={toggleFollow}
+  onMessage={openChat}
+/>
+```
+
+### 管理画面
+
+```tsx
+<UserCard
+  user={userAccount}
+  onEdit={openEditModal}
+  onDelete={confirmDelete}
+  showActions={false}
+/>
+```
+
+このコンポーネントは、様々なユーザープロフィール表示シーンで再利用できる設計になっています。

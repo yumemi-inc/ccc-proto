@@ -1,0 +1,802 @@
+---
+title: SearchBox
+description: フィルタ機能付きの高機能な検索ボックスコンポーネント
+sidebar_position: 4
+tags:
+  - 検索
+  - フォーム
+---
+
+import { useState } from "react";
+import {
+  TextInput,
+  ActionIcon,
+  Menu,
+  Group,
+  Badge,
+  Paper,
+  Stack,
+  Button,
+  Select,
+  Checkbox,
+  Divider,
+  Text,
+  Box,
+  CloseButton,
+  Card,
+} from "@mantine/core";
+import {
+  IconSearch,
+  IconFilter,
+  IconChevronDown,
+  IconCalendar,
+  IconTag,
+  IconSortAscending,
+  IconX,
+  IconRefresh,
+} from "@tabler/icons-react";
+
+# SearchBox
+
+フィルタ機能付きの高機能な検索ボックスコンポーネントです。
+
+## 概要
+
+`SearchBox`は、以下の Mantine コンポーネントを組み合わせて作られた Block コンポーネントです：
+
+- **TextInput**: 検索キーワード入力
+- **ActionIcon**: 検索ボタンとフィルタボタン
+- **Menu**: フィルタオプション表示
+- **Select**: カテゴリ選択
+- **Checkbox**: 複数選択フィルタ
+- **Badge**: 適用中のフィルタ表示
+
+## ライブデモ
+
+export const SearchBoxDemo = () => {
+  const [searchValue, setSearchValue] = useState('');
+  const [filters, setFilters] = useState({
+    category: '',
+    tags: [],
+    dateRange: '',
+    sortBy: 'relevance'
+  });
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+const categories = [
+{ value: 'all', label: 'すべて' },
+{ value: 'documents', label: 'ドキュメント' },
+{ value: 'images', label: '画像' },
+{ value: 'videos', label: '動画' },
+{ value: 'code', label: 'コード' }
+];
+
+const availableTags = [
+'React', 'TypeScript', 'JavaScript', 'CSS', 'HTML',
+'Node.js', 'Python', 'Design', 'Tutorial', 'Guide'
+];
+
+const dateRanges = [
+{ value: '', label: '期間指定なし' },
+{ value: 'today', label: '今日' },
+{ value: 'week', label: '1 週間以内' },
+{ value: 'month', label: '1 ヶ月以内' },
+{ value: 'year', label: '1 年以内' }
+];
+
+const sortOptions = [
+{ value: 'relevance', label: '関連度順' },
+{ value: 'date', label: '日付順' },
+{ value: 'title', label: 'タイトル順' },
+{ value: 'popularity', label: '人気順' }
+];
+
+const mockResults = [
+{ id: 1, title: 'React Hooks 完全ガイド', category: 'documents', tags: ['React', 'Tutorial'], date: '2024-01-15' },
+{ id: 2, title: 'TypeScript 入門講座', category: 'documents', tags: ['TypeScript', 'Guide'], date: '2024-01-10' },
+{ id: 3, title: 'CSS Grid レイアウト', category: 'code', tags: ['CSS', 'Design'], date: '2024-01-05' },
+{ id: 4, title: 'Node.js API 設計', category: 'code', tags: ['Node.js', 'JavaScript'], date: '2024-01-01' }
+];
+
+const handleSearch = async () => {
+setIsSearching(true);
+
+    // 検索処理のシミュレーション
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    let results = mockResults;
+
+    // フィルタリング
+    if (searchValue) {
+      results = results.filter(item =>
+        item.title.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    if (filters.category && filters.category !== 'all') {
+      results = results.filter(item => item.category === filters.category);
+    }
+
+    if (filters.tags.length > 0) {
+      results = results.filter(item =>
+        item.tags.some(tag => filters.tags.includes(tag))
+      );
+    }
+
+    setSearchResults(results);
+    setIsSearching(false);
+
+};
+
+const updateFilter = (key, value) => {
+setFilters(prev => ({ ...prev, [key]: value }));
+};
+
+const toggleTag = (tag) => {
+setFilters(prev => ({
+...prev,
+tags: prev.tags.includes(tag)
+? prev.tags.filter(t => t !== tag)
+: [...prev.tags, tag]
+}));
+};
+
+const clearFilters = () => {
+setFilters({
+category: '',
+tags: [],
+dateRange: '',
+sortBy: 'relevance'
+});
+};
+
+const getActiveFiltersCount = () => {
+let count = 0;
+if (filters.category && filters.category !== 'all') count++;
+if (filters.tags.length > 0) count++;
+if (filters.dateRange) count++;
+if (filters.sortBy !== 'relevance') count++;
+return count;
+};
+
+const activeFiltersCount = getActiveFiltersCount();
+
+return (
+
+<Stack gap="md">
+<Paper p="md" withBorder radius="md">
+<Group align="flex-end" gap="sm">
+<TextInput
+flex={1}
+placeholder="検索キーワードを入力..."
+value={searchValue}
+onChange={(e) => setSearchValue(e.target.value)}
+leftSection={<IconSearch size={16} />}
+onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+/>
+
+          <Menu shadow="md" width={300} position="bottom-end">
+            <Menu.Target>
+              <ActionIcon
+                variant="light"
+                size="lg"
+                color={activeFiltersCount > 0 ? 'blue' : 'gray'}
+              >
+                <Group gap={4}>
+                  <IconFilter size={16} />
+                  {activeFiltersCount > 0 && (
+                    <Badge size="xs" variant="filled" color="blue">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Group>
+              </ActionIcon>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Menu.Label>フィルタオプション</Menu.Label>
+
+              <Box p="xs">
+                <Stack gap="md">
+                  <Select
+                    label="カテゴリ"
+                    placeholder="カテゴリを選択"
+                    data={categories}
+                    value={filters.category}
+                    onChange={(value) => updateFilter('category', value || '')}
+                    clearable
+                  />
+
+                  <div>
+                    <Text size="sm" fw={500} mb="xs">タグ</Text>
+                    <Group gap="xs">
+                      {availableTags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant={filters.tags.includes(tag) ? 'filled' : 'light'}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => toggleTag(tag)}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </Group>
+                  </div>
+
+                  <Select
+                    label="期間"
+                    placeholder="期間を選択"
+                    data={dateRanges}
+                    value={filters.dateRange}
+                    onChange={(value) => updateFilter('dateRange', value || '')}
+                    leftSection={<IconCalendar size={16} />}
+                  />
+
+                  <Select
+                    label="並び順"
+                    data={sortOptions}
+                    value={filters.sortBy}
+                    onChange={(value) => updateFilter('sortBy', value || 'relevance')}
+                    leftSection={<IconSortAscending size={16} />}
+                  />
+
+                  <Group justify="space-between">
+                    <Button
+                      variant="subtle"
+                      size="xs"
+                      leftSection={<IconRefresh size={14} />}
+                      onClick={clearFilters}
+                      disabled={activeFiltersCount === 0}
+                    >
+                      リセット
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={handleSearch}
+                      loading={isSearching}
+                    >
+                      検索実行
+                    </Button>
+                  </Group>
+                </Stack>
+              </Box>
+            </Menu.Dropdown>
+          </Menu>
+
+          <Button
+            leftSection={<IconSearch size={16} />}
+            onClick={handleSearch}
+            loading={isSearching}
+          >
+            検索
+          </Button>
+        </Group>
+
+        {/* 適用中のフィルタ表示 */}
+        {activeFiltersCount > 0 && (
+          <Group gap="xs" mt="sm">
+            <Text size="xs" c="dimmed">適用中:</Text>
+
+            {filters.category && filters.category !== 'all' && (
+              <Badge
+                variant="light"
+                rightSection={
+                  <CloseButton
+                    size="xs"
+                    onClick={() => updateFilter('category', '')}
+                  />
+                }
+              >
+                {categories.find(c => c.value === filters.category)?.label}
+              </Badge>
+            )}
+
+            {filters.tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="light"
+                rightSection={
+                  <CloseButton
+                    size="xs"
+                    onClick={() => toggleTag(tag)}
+                  />
+                }
+              >
+                {tag}
+              </Badge>
+            ))}
+
+            {filters.dateRange && (
+              <Badge
+                variant="light"
+                rightSection={
+                  <CloseButton
+                    size="xs"
+                    onClick={() => updateFilter('dateRange', '')}
+                  />
+                }
+              >
+                {dateRanges.find(d => d.value === filters.dateRange)?.label}
+              </Badge>
+            )}
+          </Group>
+        )}
+      </Paper>
+
+      {/* 検索結果 */}
+      {searchResults.length > 0 && (
+        <div>
+          <Text size="sm" c="dimmed" mb="md">
+            {searchResults.length}件の結果が見つかりました
+          </Text>
+
+          <Stack gap="sm">
+            {searchResults.map((result) => (
+              <Card key={result.id} padding="md" withBorder>
+                <Group justify="space-between" align="flex-start">
+                  <div style={{ flex: 1 }}>
+                    <Text fw={500} mb="xs">{result.title}</Text>
+                    <Group gap="xs">
+                      <Badge variant="light" size="xs">
+                        {categories.find(c => c.value === result.category)?.label}
+                      </Badge>
+                      {result.tags.map((tag) => (
+                        <Badge key={tag} variant="outline" size="xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </Group>
+                  </div>
+                  <Text size="xs" c="dimmed">
+                    {result.date}
+                  </Text>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
+        </div>
+      )}
+    </Stack>
+
+);
+};
+
+<SearchBoxDemo />
+
+## 実装コード
+
+```tsx
+import { useState } from "react";
+import {
+  TextInput,
+  ActionIcon,
+  Menu,
+  Group,
+  Badge,
+  Paper,
+  Stack,
+  Button,
+  Select,
+  Text,
+  CloseButton,
+} from "@mantine/core";
+import {
+  IconSearch,
+  IconFilter,
+  IconCalendar,
+  IconSortAscending,
+  IconRefresh,
+} from "@tabler/icons-react";
+
+interface SearchBoxProps {
+  onSearch?: (query: SearchQuery) => void;
+  placeholder?: string;
+  categories?: Option[];
+  tags?: string[];
+  dateRanges?: Option[];
+  sortOptions?: Option[];
+  showFilters?: boolean;
+  isLoading?: boolean;
+}
+
+interface SearchQuery {
+  searchValue: string;
+  filters: SearchFilters;
+}
+
+interface SearchFilters {
+  category: string;
+  tags: string[];
+  dateRange: string;
+  sortBy: string;
+}
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+export function SearchBox({
+  onSearch,
+  placeholder = "検索キーワードを入力...",
+  categories = [],
+  tags = [],
+  dateRanges = [],
+  sortOptions = [],
+  showFilters = true,
+  isLoading = false,
+}: SearchBoxProps) {
+  const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState<SearchFilters>({
+    category: "",
+    tags: [],
+    dateRange: "",
+    sortBy: "relevance",
+  });
+
+  const handleSearch = () => {
+    onSearch?.({
+      searchValue,
+      filters,
+    });
+  };
+
+  const updateFilter = (key: keyof SearchFilters, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleTag = (tag: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: "",
+      tags: [],
+      dateRange: "",
+      sortBy: "relevance",
+    });
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.category) count++;
+    if (filters.tags.length > 0) count++;
+    if (filters.dateRange) count++;
+    if (filters.sortBy !== "relevance") count++;
+    return count;
+  };
+
+  const activeFiltersCount = getActiveFiltersCount();
+
+  return (
+    <Stack gap="md">
+      <Paper p="md" withBorder radius="md">
+        <Group align="flex-end" gap="sm">
+          <TextInput
+            flex={1}
+            placeholder={placeholder}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+          />
+
+          {showFilters && (
+            <Menu shadow="md" width={300} position="bottom-end">
+              <Menu.Target>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  color={activeFiltersCount > 0 ? "blue" : "gray"}
+                >
+                  <Group gap={4}>
+                    <IconFilter size={16} />
+                    {activeFiltersCount > 0 && (
+                      <Badge size="xs" variant="filled" color="blue">
+                        {activeFiltersCount}
+                      </Badge>
+                    )}
+                  </Group>
+                </ActionIcon>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Label>フィルタオプション</Menu.Label>
+
+                <Stack gap="md" p="xs">
+                  {categories.length > 0 && (
+                    <Select
+                      label="カテゴリ"
+                      placeholder="カテゴリを選択"
+                      data={categories}
+                      value={filters.category}
+                      onChange={(value) =>
+                        updateFilter("category", value || "")
+                      }
+                      clearable
+                    />
+                  )}
+
+                  {tags.length > 0 && (
+                    <div>
+                      <Text size="sm" fw={500} mb="xs">
+                        タグ
+                      </Text>
+                      <Group gap="xs">
+                        {tags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant={
+                              filters.tags.includes(tag) ? "filled" : "light"
+                            }
+                            style={{ cursor: "pointer" }}
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </Group>
+                    </div>
+                  )}
+
+                  {dateRanges.length > 0 && (
+                    <Select
+                      label="期間"
+                      placeholder="期間を選択"
+                      data={dateRanges}
+                      value={filters.dateRange}
+                      onChange={(value) =>
+                        updateFilter("dateRange", value || "")
+                      }
+                      leftSection={<IconCalendar size={16} />}
+                    />
+                  )}
+
+                  {sortOptions.length > 0 && (
+                    <Select
+                      label="並び順"
+                      data={sortOptions}
+                      value={filters.sortBy}
+                      onChange={(value) =>
+                        updateFilter("sortBy", value || "relevance")
+                      }
+                      leftSection={<IconSortAscending size={16} />}
+                    />
+                  )}
+
+                  <Group justify="space-between">
+                    <Button
+                      variant="subtle"
+                      size="xs"
+                      leftSection={<IconRefresh size={14} />}
+                      onClick={clearFilters}
+                      disabled={activeFiltersCount === 0}
+                    >
+                      リセット
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={handleSearch}
+                      loading={isLoading}
+                    >
+                      検索実行
+                    </Button>
+                  </Group>
+                </Stack>
+              </Menu.Dropdown>
+            </Menu>
+          )}
+
+          <Button
+            leftSection={<IconSearch size={16} />}
+            onClick={handleSearch}
+            loading={isLoading}
+          >
+            検索
+          </Button>
+        </Group>
+
+        {/* 適用中のフィルタ表示 */}
+        {activeFiltersCount > 0 && (
+          <Group gap="xs" mt="sm">
+            <Text size="xs" c="dimmed">
+              適用中:
+            </Text>
+
+            {filters.category && (
+              <Badge
+                variant="light"
+                rightSection={
+                  <CloseButton
+                    size="xs"
+                    onClick={() => updateFilter("category", "")}
+                  />
+                }
+              >
+                {categories.find((c) => c.value === filters.category)?.label}
+              </Badge>
+            )}
+
+            {filters.tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="light"
+                rightSection={
+                  <CloseButton size="xs" onClick={() => toggleTag(tag)} />
+                }
+              >
+                {tag}
+              </Badge>
+            ))}
+
+            {filters.dateRange && (
+              <Badge
+                variant="light"
+                rightSection={
+                  <CloseButton
+                    size="xs"
+                    onClick={() => updateFilter("dateRange", "")}
+                  />
+                }
+              >
+                {dateRanges.find((d) => d.value === filters.dateRange)?.label}
+              </Badge>
+            )}
+          </Group>
+        )}
+      </Paper>
+    </Stack>
+  );
+}
+```
+
+## プロパティ
+
+| プロパティ    | 型                             | デフォルト                  | 説明                             |
+| ------------- | ------------------------------ | --------------------------- | -------------------------------- |
+| `onSearch`    | `(query: SearchQuery) => void` | -                           | 検索実行時のコールバック         |
+| `placeholder` | `string`                       | `"検索キーワードを入力..."` | 入力フィールドのプレースホルダー |
+| `categories`  | `Option[]`                     | `[]`                        | カテゴリ選択肢                   |
+| `tags`        | `string[]`                     | `[]`                        | 選択可能なタグ一覧               |
+| `dateRanges`  | `Option[]`                     | `[]`                        | 日付範囲選択肢                   |
+| `sortOptions` | `Option[]`                     | `[]`                        | ソート選択肢                     |
+| `showFilters` | `boolean`                      | `true`                      | フィルタボタンの表示             |
+| `isLoading`   | `boolean`                      | `false`                     | ローディング状態                 |
+
+## 使用方法
+
+### 基本的な使用
+
+```tsx
+const handleSearch = (query: SearchQuery) => {
+  console.log("検索クエリ:", query);
+  // 検索API呼び出し
+  searchAPI(query.searchValue, query.filters);
+};
+
+<SearchBox onSearch={handleSearch} placeholder="記事を検索..." />;
+```
+
+### フィルタ付きの使用
+
+```tsx
+const categories = [
+  { value: "all", label: "すべて" },
+  { value: "blog", label: "ブログ" },
+  { value: "docs", label: "ドキュメント" },
+];
+
+const tags = ["React", "TypeScript", "CSS", "JavaScript"];
+
+const dateRanges = [
+  { value: "week", label: "1週間以内" },
+  { value: "month", label: "1ヶ月以内" },
+  { value: "year", label: "1年以内" },
+];
+
+<SearchBox
+  onSearch={handleSearch}
+  categories={categories}
+  tags={tags}
+  dateRanges={dateRanges}
+  isLoading={isSearching}
+/>;
+```
+
+### カスタマイズ例
+
+```tsx
+// シンプルな検索ボックス（フィルタなし）
+<SearchBox
+  onSearch={handleSearch}
+  showFilters={false}
+  placeholder="ユーザーを検索..."
+/>
+
+// 高度な検索（全オプション）
+<SearchBox
+  onSearch={handleAdvancedSearch}
+  categories={allCategories}
+  tags={allTags}
+  dateRanges={dateOptions}
+  sortOptions={sortOptions}
+/>
+```
+
+## 構成要素
+
+この Block コンポーネントは以下の Mantine コンポーネントで構成されています：
+
+### 検索機能
+
+- **TextInput**: キーワード入力（アイコン付き）
+- **Button**: 検索実行ボタン
+- **ActionIcon**: フィルタトグルボタン
+
+### フィルタ機能
+
+- **Menu**: フィルタオプション表示
+- **Select**: カテゴリ・期間・ソート選択
+- **Badge**: タグ選択とフィルタ状態表示
+- **CloseButton**: フィルタ解除ボタン
+
+### レイアウト
+
+- **Paper**: コンテナ（境界線付き）
+- **Group**: 横方向レイアウト
+- **Stack**: 縦方向レイアウト
+
+## 特徴
+
+- **🔍 リアルタイム検索**: Enter キーでの即座検索
+- **🎛️ 多段階フィルタ**: カテゴリ、タグ、期間、ソート
+- **🏷️ 視覚的フィルタ**: 適用中フィルタの Badge 表示
+- **❌ 簡単解除**: 個別フィルタの削除機能
+- **📱 レスポンシブ**: モバイル対応レイアウト
+- **♿ アクセシブル**: キーボード操作対応
+- **⚡ パフォーマンス**: 効率的な状態管理
+
+## バリエーション
+
+### ドキュメント検索
+
+```tsx
+<SearchBox
+  placeholder="ドキュメントを検索..."
+  categories={docCategories}
+  tags={techTags}
+  onSearch={searchDocuments}
+/>
+```
+
+### E コマース商品検索
+
+```tsx
+<SearchBox
+  placeholder="商品を検索..."
+  categories={productCategories}
+  tags={brandTags}
+  dateRanges={stockDates}
+  sortOptions={priceSortOptions}
+  onSearch={searchProducts}
+/>
+```
+
+### ユーザー検索
+
+```tsx
+<SearchBox
+  placeholder="ユーザーを検索..."
+  showFilters={false}
+  onSearch={searchUsers}
+/>
+```
+
+このコンポーネントは、複雑な検索インターフェースを簡単に実装できる実用的な設計です。

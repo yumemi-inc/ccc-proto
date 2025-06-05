@@ -1,0 +1,522 @@
+---
+title: NotificationBanner
+description: アクション機能付きの通知バナーコンポーネント
+sidebar_position: 5
+tags:
+  - 通知
+---
+
+import { useState } from "react";
+import {
+  Alert,
+  ActionIcon,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Box,
+  Transition,
+  Card,
+  Badge,
+} from "@mantine/core";
+import {
+  IconAlertCircle,
+  IconInfoCircle,
+  IconCheck,
+  IconAlertTriangle,
+  IconX,
+  IconExternalLink,
+  IconDownload,
+  IconRefresh,
+  IconSettings,
+} from "@tabler/icons-react";
+
+# NotificationBanner
+
+アクション機能付きの通知バナーコンポーネントです。
+
+## 概要
+
+`NotificationBanner`は、以下の Mantine コンポーネントを組み合わせて作られた Block コンポーネントです：
+
+- **Alert**: メッセージ表示のベース
+- **ActionIcon**: 閉じるボタン
+- **Button**: アクションボタン
+- **Group**: 水平レイアウト
+- **Transition**: アニメーション効果
+
+## ライブデモ
+
+export const NotificationBannerDemo = () => {
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'info',
+      title: 'アップデート情報',
+      message: '新しいバージョン v2.1.0 が利用可能です。新機能と改善が含まれています。',
+      actions: [
+        { label: '詳細を見る', action: 'view', variant: 'light' },
+        { label: 'アップデート', action: 'update', variant: 'filled' }
+      ],
+      visible: true,
+      closable: true
+    },
+    {
+      id: 2,
+      type: 'warning',
+      title: 'メンテナンス予告',
+      message: '2024年1月20日 2:00-4:00 にシステムメンテナンスを実施します。',
+      actions: [
+        { label: 'スケジュール確認', action: 'schedule', variant: 'light' }
+      ],
+      visible: true,
+      closable: true
+    },
+    {
+      id: 3,
+      type: 'success',
+      title: 'バックアップ完了',
+      message: 'データベースのバックアップが正常に完了しました。',
+      actions: [
+        { label: 'ダウンロード', action: 'download', variant: 'light' }
+      ],
+      visible: true,
+      closable: true
+    },
+    {
+      id: 4,
+      type: 'error',
+      title: '接続エラー',
+      message: 'サーバーとの接続に問題が発生しています。しばらく待ってから再試行してください。',
+      actions: [
+        { label: '再試行', action: 'retry', variant: 'filled' },
+        { label: '設定', action: 'settings', variant: 'light' }
+      ],
+      visible: true,
+      closable: true
+    }
+  ]);
+
+const getNotificationProps = (type) => {
+switch (type) {
+case 'success':
+return {
+color: 'green',
+icon: <IconCheck size={16} />,
+variant: 'light'
+};
+case 'warning':
+return {
+color: 'yellow',
+icon: <IconAlertTriangle size={16} />,
+variant: 'light'
+};
+case 'error':
+return {
+color: 'red',
+icon: <IconAlertCircle size={16} />,
+variant: 'light'
+};
+case 'info':
+default:
+return {
+color: 'blue',
+icon: <IconInfoCircle size={16} />,
+variant: 'light'
+};
+}
+};
+
+const getActionIcon = (action) => {
+switch (action) {
+case 'view': return <IconExternalLink size={14} />;
+case 'update': return <IconDownload size={14} />;
+case 'retry': return <IconRefresh size={14} />;
+case 'settings': return <IconSettings size={14} />;
+case 'download': return <IconDownload size={14} />;
+default: return null;
+}
+};
+
+const handleAction = (notificationId, action) => {
+alert(`アクション実行: ${action} (通知ID: ${notificationId})`);
+// 実際のアプリケーションでは、ここで適切な処理を行う
+};
+
+const closeNotification = (notificationId) => {
+setNotifications(prev =>
+prev.map(notification =>
+notification.id === notificationId
+? { ...notification, visible: false }
+: notification
+)
+);
+};
+
+const resetNotifications = () => {
+setNotifications(prev =>
+prev.map(notification => ({ ...notification, visible: true }))
+);
+};
+
+return (
+
+<Stack gap="md">
+<Group justify="space-between">
+<Text fw={500}>通知バナー例</Text>
+<Button size="xs" variant="light" onClick={resetNotifications}>
+すべて表示
+</Button>
+</Group>
+
+      {notifications.map((notification) => (
+        <Transition
+          key={notification.id}
+          mounted={notification.visible}
+          transition="slide-down"
+          duration={200}
+          timingFunction="ease"
+        >
+          {(styles) => (
+            <Alert
+              style={styles}
+              {...getNotificationProps(notification.type)}
+              title={notification.title}
+              withCloseButton={notification.closable}
+              onClose={() => closeNotification(notification.id)}
+            >
+              <Stack gap="sm">
+                <Text size="sm">{notification.message}</Text>
+
+                {notification.actions && notification.actions.length > 0 && (
+                  <Group gap="xs">
+                    {notification.actions.map((action, index) => (
+                      <Button
+                        key={index}
+                        size="xs"
+                        variant={action.variant}
+                        leftSection={getActionIcon(action.action)}
+                        onClick={() => handleAction(notification.id, action.action)}
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
+                  </Group>
+                )}
+              </Stack>
+            </Alert>
+          )}
+        </Transition>
+      ))}
+    </Stack>
+
+);
+};
+
+<NotificationBannerDemo />
+
+## 実装コード
+
+```tsx
+import { useState } from "react";
+import {
+  Alert,
+  ActionIcon,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Transition,
+} from "@mantine/core";
+import {
+  IconAlertCircle,
+  IconInfoCircle,
+  IconCheck,
+  IconAlertTriangle,
+  IconX,
+} from "@tabler/icons-react";
+
+interface NotificationBannerProps {
+  type: "info" | "success" | "warning" | "error";
+  title?: string;
+  message: string;
+  actions?: NotificationAction[];
+  closable?: boolean;
+  visible?: boolean;
+  onClose?: () => void;
+  onAction?: (actionKey: string) => void;
+}
+
+interface NotificationAction {
+  key: string;
+  label: string;
+  variant?: "filled" | "light" | "outline" | "subtle";
+  icon?: React.ReactNode;
+}
+
+export function NotificationBanner({
+  type,
+  title,
+  message,
+  actions = [],
+  closable = true,
+  visible = true,
+  onClose,
+  onAction,
+}: NotificationBannerProps) {
+  const getNotificationProps = (type: string) => {
+    switch (type) {
+      case "success":
+        return {
+          color: "green",
+          icon: <IconCheck size={16} />,
+          variant: "light" as const,
+        };
+      case "warning":
+        return {
+          color: "yellow",
+          icon: <IconAlertTriangle size={16} />,
+          variant: "light" as const,
+        };
+      case "error":
+        return {
+          color: "red",
+          icon: <IconAlertCircle size={16} />,
+          variant: "light" as const,
+        };
+      case "info":
+      default:
+        return {
+          color: "blue",
+          icon: <IconInfoCircle size={16} />,
+          variant: "light" as const,
+        };
+    }
+  };
+
+  const handleAction = (actionKey: string) => {
+    onAction?.(actionKey);
+  };
+
+  return (
+    <Transition
+      mounted={visible}
+      transition="slide-down"
+      duration={200}
+      timingFunction="ease"
+    >
+      {(styles) => (
+        <Alert
+          style={styles}
+          {...getNotificationProps(type)}
+          title={title}
+          withCloseButton={closable}
+          onClose={onClose}
+        >
+          <Stack gap="sm">
+            <Text size="sm">{message}</Text>
+
+            {actions.length > 0 && (
+              <Group gap="xs">
+                {actions.map((action) => (
+                  <Button
+                    key={action.key}
+                    size="xs"
+                    variant={action.variant || "light"}
+                    leftSection={action.icon}
+                    onClick={() => handleAction(action.key)}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </Group>
+            )}
+          </Stack>
+        </Alert>
+      )}
+    </Transition>
+  );
+}
+```
+
+## プロパティ
+
+| プロパティ | 型                                            | デフォルト | 説明                           |
+| ---------- | --------------------------------------------- | ---------- | ------------------------------ |
+| `type`     | `'info' \| 'success' \| 'warning' \| 'error'` | -          | 通知の種類                     |
+| `title`    | `string`                                      | -          | 通知のタイトル                 |
+| `message`  | `string`                                      | -          | 通知メッセージ                 |
+| `actions`  | `NotificationAction[]`                        | `[]`       | アクションボタン配列           |
+| `closable` | `boolean`                                     | `true`     | 閉じるボタンの表示             |
+| `visible`  | `boolean`                                     | `true`     | 表示状態                       |
+| `onClose`  | `() => void`                                  | -          | 閉じる時のコールバック         |
+| `onAction` | `(actionKey: string) => void`                 | -          | アクション実行時のコールバック |
+
+## 使用方法
+
+### 基本的な使用
+
+```tsx
+<NotificationBanner
+  type="info"
+  title="お知らせ"
+  message="新機能が追加されました。"
+  onClose={() => console.log("通知を閉じました")}
+/>
+```
+
+### アクション付きの使用
+
+```tsx
+const actions = [
+  {
+    key: "view",
+    label: "詳細を見る",
+    variant: "light",
+    icon: <IconExternalLink size={14} />,
+  },
+  {
+    key: "update",
+    label: "アップデート",
+    variant: "filled",
+    icon: <IconDownload size={14} />,
+  },
+];
+
+<NotificationBanner
+  type="warning"
+  title="アップデート可能"
+  message="新しいバージョンが利用可能です。"
+  actions={actions}
+  onAction={(actionKey) => handleAction(actionKey)}
+  onClose={() => dismissNotification()}
+/>;
+```
+
+### 状態管理と組み合わせた使用
+
+```tsx
+const [notifications, setNotifications] = useState([
+  {
+    id: 1,
+    type: "success",
+    title: "保存完了",
+    message: "データが正常に保存されました。",
+    visible: true,
+  },
+]);
+
+const closeNotification = (id) => {
+  setNotifications((prev) =>
+    prev.map((notification) =>
+      notification.id === id
+        ? { ...notification, visible: false }
+        : notification
+    )
+  );
+};
+
+{
+  notifications.map((notification) => (
+    <NotificationBanner
+      key={notification.id}
+      type={notification.type}
+      title={notification.title}
+      message={notification.message}
+      visible={notification.visible}
+      onClose={() => closeNotification(notification.id)}
+    />
+  ));
+}
+```
+
+## 構成要素
+
+この Block コンポーネントは以下の Mantine コンポーネントで構成されています：
+
+### 通知表示
+
+- **Alert**: メッセージ表示のベース（アイコン、色、バリアント付き）
+- **Text**: メッセージテキスト
+
+### インタラクション
+
+- **Button**: アクションボタン（複数サイズ・バリアント対応）
+- **ActionIcon**: 閉じるボタン（Alert 内蔵機能使用）
+
+### レイアウト・アニメーション
+
+- **Stack**: 縦方向レイアウト
+- **Group**: 横方向レイアウト
+- **Transition**: 表示/非表示アニメーション
+
+## 特徴
+
+- **🎨 タイプ別スタイル**: info/success/warning/error で自動的に色とアイコンが変わる
+- **⚡ アクション実行**: 複数のアクションボタンを設置可能
+- **✨ アニメーション**: スムーズな表示/非表示切り替え
+- **❌ 閉じる機能**: ワンクリックで通知を消去
+- **♿ アクセシブル**: スクリーンリーダー対応
+- **📱 レスポンシブ**: モバイル画面でも適切に表示
+
+## バリエーション
+
+### システム通知
+
+```tsx
+<NotificationBanner
+  type="info"
+  title="システムメンテナンス"
+  message="2024年1月20日にメンテナンスを実施します。"
+  actions={[{ key: "schedule", label: "スケジュール確認", variant: "light" }]}
+/>
+```
+
+### エラー通知
+
+```tsx
+<NotificationBanner
+  type="error"
+  title="接続エラー"
+  message="サーバーに接続できません。"
+  actions={[
+    { key: "retry", label: "再試行", variant: "filled" },
+    { key: "support", label: "サポート", variant: "light" },
+  ]}
+/>
+```
+
+### 成功通知（自動閉じ）
+
+```tsx
+<NotificationBanner
+  type="success"
+  message="データが正常に保存されました。"
+  closable={false}
+  visible={showSuccess}
+/>;
+
+// 3秒後に自動で非表示
+useEffect(() => {
+  if (showSuccess) {
+    const timer = setTimeout(() => setShowSuccess(false), 3000);
+    return () => clearTimeout(timer);
+  }
+}, [showSuccess]);
+```
+
+### プロモーション通知
+
+```tsx
+<NotificationBanner
+  type="info"
+  title="特別オファー"
+  message="期間限定で Premium プランが 50% オフ！"
+  actions={[
+    { key: "upgrade", label: "アップグレード", variant: "filled" },
+    { key: "details", label: "詳細", variant: "light" },
+  ]}
+/>
+```
+
+このコンポーネントは、ユーザーへの重要な情報伝達とアクション誘導を効果的に行える設計になっています。
